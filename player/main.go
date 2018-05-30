@@ -56,19 +56,19 @@ func getTrackInfo() string {
 }
 
 func peridiocallyGetTrackInfo() {
-    var trackname string
-	t := time.NewTimer(time.Minute);
-    for {
-		newTrackname := getTrackInfo();
-        if (trackname != newTrackname) {
-            trackname = newTrackname;
-			log.Println(">>> Now playing: ", trackname);
+	var trackname string
+	t := time.NewTimer(time.Minute)
+	for {
+		newTrackname := getTrackInfo()
+		if trackname != newTrackname {
+			trackname = newTrackname
+			log.Println(">>> Now playing: ", trackname)
 		}
-        <-t.C
+		<-t.C
 	}
 }
 
 func main() {
-	go peridiocallyGetTrackInfo();
-	playAudio();
+	go peridiocallyGetTrackInfo()
+	playAudio()
 }
