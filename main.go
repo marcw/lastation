@@ -14,7 +14,7 @@ type trackinfo struct {
 	Trackname string
 }
 
-func main() {
+func playAudio() {
 	fmt.Println(">>> Playing lastation.fm")
 	resp, err := http.Get("https://radio.lastation.fm/listen.mp3")
 	if err != nil {
@@ -35,6 +35,10 @@ func main() {
 		close(done)
 	})))
 
+	<-done
+}
+
+func getTrackInfo() string {
 	// Read track info from JSON
 	resp2, err := http.Get("https://lastation.fm/track.json")
 	if err != nil {
@@ -47,7 +51,24 @@ func main() {
 	if err := json.Unmarshal(rawTrackInfo, &t); err != nil {
 		log.Println("Error while decoding JSON", err)
 	}
-	fmt.Println(">>> Current track: ", t.Trackname)
 
-	<-done
+	return t.Trackname
+}
+
+func peridiocallyGetTrackInfo() {
+    var trackname string
+	t := time.NewTimer(time.Minute);
+    for {
+		newTrackname := getTrackInfo();
+        if (trackname != newTrackname) {
+            trackname = newTrackname;
+			log.Println(">>> Now playing: ", trackname);
+		}
+        <-t.C
+	}
+}
+
+func main() {
+	go peridiocallyGetTrackInfo();
+	playAudio();
 }
