@@ -11,43 +11,43 @@ import "github.com/faiface/beep/mp3"
 import "github.com/faiface/beep/speaker"
 
 type trackinfo struct {
-    Trackname string
+	Trackname string
 }
 
 func main() {
-	fmt.Println(">>> Playing lastation.fm");
-    resp, err := http.Get("https://radio.lastation.fm/listen.mp3")
-    if (err != nil) {
-        log.Fatalln(err);
+	fmt.Println(">>> Playing lastation.fm")
+	resp, err := http.Get("https://radio.lastation.fm/listen.mp3")
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-    // Decoding mp3 from raw response
+	// Decoding mp3 from raw response
 	s, format, err := mp3.Decode(resp.Body)
-    if err != nil {
-        log.Fatalln(err);
+	if err != nil {
+		log.Fatalln(err)
 	}
-    defer s.Close()
+	defer s.Close()
 
-    // Open speakers
+	// Open speakers
 	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
 	done := make(chan struct{})
-    speaker.Play(beep.Seq(s, beep.Callback(func() {
-        close(done)
-    })))
+	speaker.Play(beep.Seq(s, beep.Callback(func() {
+		close(done)
+	})))
 
-    // Read track info from JSON
-    resp2, err := http.Get("https://lastation.fm/track.json")
-    if (err != nil) {
-        log.Fatalln(err);
+	// Read track info from JSON
+	resp2, err := http.Get("https://lastation.fm/track.json")
+	if err != nil {
+		log.Fatalln(err)
 	}
-	rawTrackInfo, _ := ioutil.ReadAll(resp2.Body);
-    defer resp2.Body.Close();
+	rawTrackInfo, _ := ioutil.ReadAll(resp2.Body)
+	defer resp2.Body.Close()
 
 	t := trackinfo{}
 	if err := json.Unmarshal(rawTrackInfo, &t); err != nil {
-        log.Println("Error while decoding JSON", err);
+		log.Println("Error while decoding JSON", err)
 	}
-	fmt.Println(">>> Current track: ", t.Trackname);
+	fmt.Println(">>> Current track: ", t.Trackname)
 
-    <-done
+	<-done
 }
